@@ -1,0 +1,36 @@
+name: Create Free Azure VM
+
+on:
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  create-free-vm:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ bac13df9-78a7-4f29-8fbe-654bf8eaef2a }}
+
+    - name: Create Resource Group
+      run: |
+        az group create --name test --location eastus
+
+    - name: Create Free-tier Ubuntu Virtual Machine
+      run: |
+        az vm create \
+          --resource-group test \
+          --name testvm \
+          --image UbuntuLTS \
+          --size Standard_B1s \  # Free-tier VM size
+          --admin-username azureuser \
+          --generate-ssh-keys \
+          --public-ip-sku Basic  # Free-tier Public IP
+
+    - name: Get VM Public IP
+      run: |
+        az vm list-ip-addresses --name testvm --resource-group test --output table
